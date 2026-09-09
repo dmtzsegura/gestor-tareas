@@ -2,5 +2,11 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h1>Hola desde una plantilla</h1>
+<h1>Mis Tareas</h1>
+
+<ul>
+  {% for tarea in tareas %}
+    <li>{{ tarea.titulo }} - {{ tarea.responsable }} - {{ tarea.estatus }}</li>
+  {% endfor %}
+</ul>
 {% endblock %}
