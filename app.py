@@ -17,8 +17,17 @@ class Tarea(db.Model):
 
 @app.route("/")
 def home():
-    tareas = Tarea.query.all()
-    return render_template("index.html", tareas=tareas)
+    filtro_responsable = request.args.get("responsable")
+
+    if filtro_responsable:
+        tareas = Tarea.query.filter_by(responsable=filtro_responsable).all()
+    else:
+        tareas = Tarea.query.all()
+
+    for tarea in tareas:
+        tarea.dias_transcurridos = (date.today() - tarea.fecha_asignacion).days
+
+    return render_template("index.html", tareas=tareas, filtro_responsable=filtro_responsable)
 
 @app.route("/nueva", methods=["GET", "POST"])
 def nueva_tarea():
@@ -33,6 +42,13 @@ def nueva_tarea():
         return redirect(url_for("home"))
 
     return render_template("nueva_tarea.html")
+
+@app.route("/actualizar_estatus/<int:tarea_id>", methods=["POST"])
+def actualizar_estatus(tarea_id):
+    tarea = Tarea.query.get(tarea_id)
+    tarea.estatus = request.form["estatus"]
+    db.session.commit()
+    return redirect(url_for("home"))
 
 if __name__ == "__main__":
     app.run(debug=True)

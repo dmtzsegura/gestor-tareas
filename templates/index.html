@@ -4,9 +4,30 @@
 {% block content %}
 <h1>Mis Tareas</h1>
 
-<ul>
+<form method="GET" class="d-flex mb-3" style="max-width: 300px;">
+  <input type="text" name="responsable" class="form-control me-2"
+         placeholder="Filtrar por responsable"
+         value="{{ filtro_responsable or '' }}">
+  <button type="submit" class="btn btn-outline-primary">Buscar</button>
+</form>
+
+{% if filtro_responsable %}
+  <p>Mostrando tareas de: <strong>{{ filtro_responsable }}</strong> — <a href="{{ url_for('home') }}">ver todas</a></p>
+{% endif %}
+
+<ul class="list-group">
   {% for tarea in tareas %}
-    <li>{{ tarea.titulo }} - {{ tarea.responsable }} - {{ tarea.estatus }}</li>
+    <li class="list-group-item d-flex justify-content-between align-items-center">
+      <span>{{ tarea.titulo }} - {{ tarea.responsable }} - {{ tarea.dias_transcurridos }} días</span>
+
+      <form method="POST" action="{{ url_for('actualizar_estatus', tarea_id=tarea.id) }}">
+        <select name="estatus" class="form-select form-select-sm" onchange="this.form.submit()">
+          <option value="Pendiente" {% if tarea.estatus == "Pendiente" %}selected{% endif %}>Pendiente</option>
+          <option value="En proceso" {% if tarea.estatus == "En proceso" %}selected{% endif %}>En proceso</option>
+          <option value="Completado" {% if tarea.estatus == "Completado" %}selected{% endif %}>Completado</option>
+        </select>
+      </form>
+    </li>
   {% endfor %}
 </ul>
 {% endblock %}
