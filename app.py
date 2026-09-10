@@ -50,6 +50,16 @@ def actualizar_estatus(tarea_id):
     db.session.commit()
     return redirect(url_for("home"))
 
+@app.route("/editar/<int:tarea_id>", methods=["GET", "POST"])
+def editar_tarea(tarea_id):
+    tarea = Tarea.query.get_or_404(tarea_id)
+    if request.method == "POST":
+        tarea.titulo = request.form["titulo"]
+        tarea.responsable = request.form["responsable"]
+        db.session.commit()
+        return redirect(url_for("home"))
+    return render_template("editar_tarea.html", tarea=tarea)
+
 if __name__ == "__main__":
     app.run(debug=True)
 

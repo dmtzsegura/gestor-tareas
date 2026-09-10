@@ -1,0 +1,20 @@
+
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Editar Tarea</h1>
+
+<form method="POST">
+  <div class="mb-3">
+    <label class="form-label">Título</label>
+    <input type="text" class="form-control" name="titulo" value="{{ tarea.titulo }}"  required>
+  </div>
+
+  <div class="mb-3">
+    <label class="form-label">Responsable</label>
+    <input type="text" class="form-control" name="responsable" value="{{ tarea.responsable }}" required>
+  </div>
+
+  <button type="submit" class="btn btn-primary">Guardar Tarea</button>
+</form>
+{% endblock %}

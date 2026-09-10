@@ -20,6 +20,8 @@
     <li class="list-group-item d-flex justify-content-between align-items-center">
       <span>{{ tarea.titulo }} - {{ tarea.responsable }} - {{ tarea.dias_transcurridos }} días</span>
 
+      <a href="{{ url_for('editar_tarea', tarea_id=tarea.id) }}" class="btn btn-sm btn-outline-secondary">Editar</a>
+
       <form method="POST" action="{{ url_for('actualizar_estatus', tarea_id=tarea.id) }}">
         <select name="estatus" class="form-select form-select-sm" onchange="this.form.submit()">
           <option value="Pendiente" {% if tarea.estatus == "Pendiente" %}selected{% endif %}>Pendiente</option>
