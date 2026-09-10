@@ -60,6 +60,15 @@ def editar_tarea(tarea_id):
         return redirect(url_for("home"))
     return render_template("editar_tarea.html", tarea=tarea)
 
+@app.route("/eliminar/<int:tarea_id>", methods=["POST"])
+def eliminar_tarea(tarea_id):
+    tarea = Tarea.query.get_or_404(tarea_id)
+    db.session.delete(tarea)
+    db.session.commit()
+    return redirect(url_for("home"))
+
 if __name__ == "__main__":
     app.run(debug=True)
 
+
+    
