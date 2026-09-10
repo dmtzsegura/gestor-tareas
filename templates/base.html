@@ -18,7 +18,8 @@
     <div class="col-2 bg-light vh-100 p-3">
       <h5>Menú</h5>
       <ul class="nav flex-column">
-        <li class="nav-item"><a class="nav-link" href="#">Tareas</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{ url_for('home') }}">Tareas</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{ url_for('nueva_tarea') }}">+ Nueva Tarea</a></li>
         <li class="nav-item"><a class="nav-link" href="#">Empleados</a></li>
       </ul>
     </div>
