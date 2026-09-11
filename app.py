@@ -1,6 +1,15 @@
 from flask import Flask, render_template, request, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
 from datetime import date
+import unicodedata
+
+
+def quitar_acentos(texto):
+    return ''.join(
+        c for c in unicodedata.normalize('NFD', texto)
+        if unicodedata.category(c) != 'Mn'
+    )
+
 
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///tareas.db"
@@ -20,7 +29,12 @@ def home():
     filtro_responsable = request.args.get("responsable")
 
     if filtro_responsable:
-        tareas = Tarea.query.filter_by(responsable=filtro_responsable).all()
+        filtro_normalizado = quitar_acentos(filtro_responsable).lower()
+        todas = Tarea.query.all()
+        tareas = [
+            t for t in todas
+            if filtro_normalizado in quitar_acentos(t.responsable).lower()
+        ]
     else:
         tareas = Tarea.query.all()
 
