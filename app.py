@@ -49,11 +49,14 @@ def nueva_tarea():
         titulo = request.form["titulo"]
         responsable = request.form["responsable"]
 
-        tarea = Tarea(titulo=titulo, responsable=responsable, fecha_asignacion=date.today())
-        db.session.add(tarea)
-        db.session.commit()
-
-        return redirect(url_for("home"))
+        if not titulo.strip() or not responsable.strip():
+            m_error = "No puedes dejar campos vacíos"
+            return render_template("nueva_tarea.html", error=m_error)
+        else:
+            tarea = Tarea(titulo=titulo, responsable=responsable, fecha_asignacion=date.today())
+            db.session.add(tarea)
+            db.session.commit()
+            return redirect(url_for("home"))
 
     return render_template("nueva_tarea.html")
 
@@ -68,11 +71,20 @@ def actualizar_estatus(tarea_id):
 def editar_tarea(tarea_id):
     tarea = Tarea.query.get_or_404(tarea_id)
     if request.method == "POST":
-        tarea.titulo = request.form["titulo"]
-        tarea.responsable = request.form["responsable"]
-        db.session.commit()
-        return redirect(url_for("home"))
+        titulo = request.form["titulo"]
+        responsable = request.form["responsable"]
+
+        if not titulo.strip() or not responsable.strip():
+            m_error = "No puedes dejar campos vacíos"
+            return render_template("editar_tarea.html", error=m_error, tarea=tarea)
+        else:
+            tarea.titulo = titulo
+            tarea.responsable = responsable
+            db.session.commit()
+            return redirect(url_for("home"))
+
     return render_template("editar_tarea.html", tarea=tarea)
+
 
 @app.route("/eliminar/<int:tarea_id>", methods=["POST"])
 def eliminar_tarea(tarea_id):
@@ -85,4 +97,6 @@ if __name__ == "__main__":
     app.run(debug=True)
 
 
-    
+
+
+
