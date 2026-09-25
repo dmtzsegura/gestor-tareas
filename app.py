@@ -23,6 +23,11 @@ class Tarea(db.Model):
     estatus = db.Column(db.String(20), default="Pendiente")
     fecha_asignacion = db.Column(db.Date, nullable=False)
 
+class Usuario(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    nombre = db.Column(db.String(100), nullable=False, unique=True)
+    password = db.Column(db.String(50), nullable=False)
+
 
 @app.route("/")
 def home():
