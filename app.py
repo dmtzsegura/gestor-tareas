@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, session
 from flask_sqlalchemy import SQLAlchemy
 from datetime import date
 import unicodedata
@@ -12,6 +12,7 @@ def quitar_acentos(texto):
 
 
 app = Flask(__name__)
+app.secret_key = "1234"
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///tareas.db"
 db = SQLAlchemy(app)
 
@@ -47,6 +48,24 @@ def home():
         tarea.dias_transcurridos = (date.today() - tarea.fecha_asignacion).days
 
     return render_template("index.html", tareas=tareas, filtro_responsable=filtro_responsable)
+
+
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    if request.method == "POST":
+        nombre = request.form["nombre"]
+        password = request.form["password"]
+        usuario = Usuario.query.filter_by(nombre=nombre, password=password).first()
+        
+        if usuario:
+            session["usuario"] = usuario.nombre
+            return redirect(url_for("home"))
+        
+        else:
+            return render_template("login.html", error="Usuario o contraseña incorrectos")
+        
+    return render_template("login.html")    
+        
 
 @app.route("/nueva", methods=["GET", "POST"])
 def nueva_tarea():
