@@ -1,22 +1,27 @@
-
 {% extends "base.html" %}
 
 {% block content %}
 <h1>Editar Tarea</h1>
 
 {% if error %}
-  <div class="alert alert-danger">{{ error }}</div>
+<div class="alert alert-danger">{{ error }}</div>
 {% endif %}
 
 <form method="POST">
   <div class="mb-3">
     <label class="form-label">Título</label>
-    <input type="text" class="form-control" name="titulo" value="{{ tarea.titulo }}"  required>
+    <input type="text" class="form-control" name="titulo" value="{{ tarea.titulo }}" required>
   </div>
 
   <div class="mb-3">
     <label class="form-label">Responsable</label>
-    <input type="text" class="form-control" name="responsable" value="{{ tarea.responsable }}" required>
+    <select name="usuario_id" class="form-select" required>
+      <option value="">-- Selecciona --</option>
+      {% for usuario in usuarios %}
+      <option value="{{ usuario.id }}" {% if usuario.id==tarea.usuario_id %}selected{% endif %}>{{ usuario.nombre }}
+      </option>
+      {% endfor %}
+    </select>
   </div>
 
   <button type="submit" class="btn btn-primary">Guardar Tarea</button>

@@ -1,15 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, session
 from flask_sqlalchemy import SQLAlchemy
 from datetime import date
-import unicodedata
-
-
-def quitar_acentos(texto):
-    return ''.join(
-        c for c in unicodedata.normalize('NFD', texto)
-        if unicodedata.category(c) != 'Mn'
-    )
-
 
 app = Flask(__name__)
 app.secret_key = "1234"
@@ -20,7 +11,8 @@ db = SQLAlchemy(app)
 class Tarea(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     titulo = db.Column(db.String(100), nullable=False)
-    responsable = db.Column(db.String(50), nullable=False)
+    usuario_id = db.Column(db.Integer, db.ForeignKey("usuario.id"), nullable=False)
+    usuario = db.relationship("Usuario")
     estatus = db.Column(db.String(20), default="Pendiente")
     fecha_asignacion = db.Column(db.Date, nullable=False)
 
@@ -32,22 +24,17 @@ class Usuario(db.Model):
 
 @app.route("/")
 def home():
-    filtro_responsable = request.args.get("responsable")
+    filtro_usuario_id = request.args.get("usuario_id")
 
-    if filtro_responsable:
-        filtro_normalizado = quitar_acentos(filtro_responsable).lower()
-        todas = Tarea.query.all()
-        tareas = [
-            t for t in todas
-            if filtro_normalizado in quitar_acentos(t.responsable).lower()
-        ]
+    if filtro_usuario_id:
+        tareas = Tarea.query.filter_by(usuario_id=int(filtro_usuario_id)).all()
     else:
         tareas = Tarea.query.all()
 
     for tarea in tareas:
         tarea.dias_transcurridos = (date.today() - tarea.fecha_asignacion).days
 
-    return render_template("index.html", tareas=tareas, filtro_responsable=filtro_responsable)
+    return render_template("index.html", tareas=tareas, filtro_usuario_id=filtro_usuario_id, usuarios=Usuario.query.all())
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -71,18 +58,19 @@ def login():
 def nueva_tarea():
     if request.method == "POST":
         titulo = request.form["titulo"]
-        responsable = request.form["responsable"]
+        usuario_id = int(request.form["usuario_id"])
 
-        if not titulo.strip() or not responsable.strip():
+        if not titulo.strip() or not usuario_id:
             m_error = "No puedes dejar campos vacíos"
-            return render_template("nueva_tarea.html", error=m_error)
+            return render_template("nueva_tarea.html", error=m_error, usuarios=Usuario.query.all())
+
         else:
-            tarea = Tarea(titulo=titulo, responsable=responsable, fecha_asignacion=date.today())
+            tarea = Tarea(titulo=titulo, usuario_id=usuario_id, fecha_asignacion=date.today())
             db.session.add(tarea)
             db.session.commit()
             return redirect(url_for("home"))
 
-    return render_template("nueva_tarea.html")
+    return render_template("nueva_tarea.html", usuarios=Usuario.query.all())
 
 @app.route("/actualizar_estatus/<int:tarea_id>", methods=["POST"])
 def actualizar_estatus(tarea_id):
@@ -96,19 +84,18 @@ def editar_tarea(tarea_id):
     tarea = Tarea.query.get_or_404(tarea_id)
     if request.method == "POST":
         titulo = request.form["titulo"]
-        responsable = request.form["responsable"]
+        usuario_id = int(request.form["usuario_id"])
 
-        if not titulo.strip() or not responsable.strip():
+        if not titulo.strip() or not usuario_id:
             m_error = "No puedes dejar campos vacíos"
-            return render_template("editar_tarea.html", error=m_error, tarea=tarea)
+            return render_template("editar_tarea.html", error=m_error, tarea=tarea, usuarios=Usuario.query.all())
         else:
             tarea.titulo = titulo
-            tarea.responsable = responsable
+            tarea.usuario_id = usuario_id
             db.session.commit()
             return redirect(url_for("home"))
 
-    return render_template("editar_tarea.html", tarea=tarea)
-
+    return render_template("editar_tarea.html", tarea=tarea, usuarios=Usuario.query.all())
 
 @app.route("/eliminar/<int:tarea_id>", methods=["POST"])
 def eliminar_tarea(tarea_id):
