@@ -1,6 +1,14 @@
-from flask import Flask, render_template, request, redirect, url_for, session
+from flask import Flask, render_template, request, redirect, url_for, session, flash
 from flask_sqlalchemy import SQLAlchemy
 from datetime import date
+
+import unicodedata
+
+def quitar_acentos(texto):
+    return ''.join(
+        c for c in unicodedata.normalize('NFD', texto)
+        if unicodedata.category(c) != 'Mn'
+    )
 
 app = Flask(__name__)
 app.secret_key = "1234"
@@ -12,7 +20,9 @@ class Tarea(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     titulo = db.Column(db.String(100), nullable=False)
     usuario_id = db.Column(db.Integer, db.ForeignKey("usuario.id"), nullable=False)
-    usuario = db.relationship("Usuario")
+    usuario = db.relationship("Usuario", foreign_keys=[usuario_id])
+    creado_por_id = db.Column(db.Integer, db.ForeignKey("usuario.id"), nullable=False)
+    creado_por = db.relationship("Usuario", foreign_keys=[creado_por_id])
     estatus = db.Column(db.String(20), default="Pendiente")
     fecha_asignacion = db.Column(db.Date, nullable=False)
 
@@ -42,7 +52,12 @@ def login():
     if request.method == "POST":
         nombre = request.form["nombre"]
         password = request.form["password"]
-        usuario = Usuario.query.filter_by(nombre=nombre, password=password).first()
+        nombre_normalizado = quitar_acentos(nombre).lower()
+        usuario = None
+        for u in Usuario.query.all():
+            if quitar_acentos(u.nombre).lower() == nombre_normalizado and u.password == password:
+                usuario = u
+                break
         
         if usuario:
             session["usuario"] = usuario.nombre
@@ -56,6 +71,9 @@ def login():
 
 @app.route("/nueva", methods=["GET", "POST"])
 def nueva_tarea():
+    if "usuario" not in session:
+        return redirect(url_for("login"))
+
     if request.method == "POST":
         titulo = request.form["titulo"]
         usuario_id = int(request.form["usuario_id"])
@@ -65,22 +83,45 @@ def nueva_tarea():
             return render_template("nueva_tarea.html", error=m_error, usuarios=Usuario.query.all())
 
         else:
-            tarea = Tarea(titulo=titulo, usuario_id=usuario_id, fecha_asignacion=date.today())
+            usuario_actual = Usuario.query.filter_by(nombre=session["usuario"]).first()
+            tarea = Tarea(titulo=titulo, usuario_id=usuario_id, creado_por_id=usuario_actual.id, fecha_asignacion=date.today())
             db.session.add(tarea)
             db.session.commit()
             return redirect(url_for("home"))
 
     return render_template("nueva_tarea.html", usuarios=Usuario.query.all())
 
+
 @app.route("/actualizar_estatus/<int:tarea_id>", methods=["POST"])
+
 def actualizar_estatus(tarea_id):
+    if "usuario" not in session:
+        return redirect(url_for("login"))
+    
+    usuario_actual = Usuario.query.filter_by(nombre=session["usuario"]).first()
     tarea = Tarea.query.get(tarea_id)
-    tarea.estatus = request.form["estatus"]
+    nuevo_estatus = request.form["estatus"]
+    
+    if nuevo_estatus == "En proceso" and (usuario_actual.id == tarea.usuario_id or usuario_actual.id == tarea.creado_por_id):
+        tarea.estatus = nuevo_estatus
+        
+    elif nuevo_estatus == "Completado" and usuario_actual.id == tarea.creado_por_id:
+        tarea.estatus = nuevo_estatus
+
+    elif nuevo_estatus == "Pendiente" and usuario_actual.id == tarea.creado_por_id:
+        tarea.estatus = nuevo_estatus
+
+    else:
+        flash("Solo quién te asignó la tarea tiene permiso para realizar este cambio")
+        
     db.session.commit()
     return redirect(url_for("home"))
 
 @app.route("/editar/<int:tarea_id>", methods=["GET", "POST"])
 def editar_tarea(tarea_id):
+    if "usuario" not in session:
+        return redirect(url_for("login"))
+
     tarea = Tarea.query.get_or_404(tarea_id)
     if request.method == "POST":
         titulo = request.form["titulo"]
@@ -99,9 +140,18 @@ def editar_tarea(tarea_id):
 
 @app.route("/eliminar/<int:tarea_id>", methods=["POST"])
 def eliminar_tarea(tarea_id):
+    if "usuario" not in session:
+        return redirect(url_for("login"))
+
+    usuario_actual = Usuario.query.filter_by(nombre=session["usuario"]).first()
     tarea = Tarea.query.get_or_404(tarea_id)
-    db.session.delete(tarea)
-    db.session.commit()
+
+    if usuario_actual.id == tarea.creado_por_id:
+        db.session.delete(tarea)
+        db.session.commit()
+    else:
+        flash("Sólo quién asignó la tarea tiene permiso para eliminarla")
+
     return redirect(url_for("home"))
 
 if __name__ == "__main__":
