@@ -5,7 +5,7 @@
 <div class="row mb-4">
 
   <div class="col-3">
-    <div class="card text-bg-primary">
+    <div class="card tarjeta-resumen tarjeta-total">
       <div class="card-body">
         <h6 class="card-title"><i class="bi bi-list-task"></i> Total</h6>
         <p class="fs-2 mb-0">{{ total }}</p>
@@ -14,7 +14,7 @@
   </div>
 
   <div class="col-3">
-    <div class="card text-bg-secondary">
+    <div class="card tarjeta-resumen tarjeta-pendiente">
       <div class="card-body">
         <h6 class="card-title"><i class="bi bi-hourglass"></i> Pendientes</h6>
         <p class="fs-2 mb-0">{{ pendientes }}</p>
@@ -23,62 +23,61 @@
   </div>
 
   <div class="col-3">
-    <div class="card text-bg-warning">
-      <div class="card-body">
-        <h6 class="card-title"><i class="bi bi-arrow-repeat"></i> En proceso</h6>
-        <p class="fs-2 mb-0">{{ en_proceso }}</p>
-      </div>
-    </div>
-  </div>
-
-  <div class="col-3">
-    <div class="card text-bg-success">
+    <div class="card tarjeta-resumen tarjeta-completada">
       <div class="card-body">
         <h6 class="card-title"><i class="bi bi-check-circle"></i> Completadas</h6>
         <p class="fs-2 mb-0">{{ completadas }}</p>
       </div>
     </div>
   </div>
+
+  <div class="col-3">
+    <div class="card tarjeta-resumen tarjeta-proceso">
+      <div class="card-body">
+        <h6 class="card-title"><i class="bi bi-arrow-repeat"></i> En proceso</h6>
+        <p class="fs-2 mb-0">{{ en_proceso }}</p>
+      </div>
+    </div>
+  </div>
 </div>
 
-            <form method="GET" class="d-flex mb-3" style="max-width: 300px;">
-              <select name="usuario_id" class="form-select me-2" onchange="this.form.submit()">
-                <option value="">-- Todos --</option>
-                {% for usuario in usuarios %}
-                <option value="{{ usuario.id }}" {% if filtro_usuario_id and usuario.id==filtro_usuario_id|int
-                  %}selected{% endif %}>{{ usuario.nombre }}</option>
-                {% endfor %}
-              </select>
-            </form>
+<form method="GET" class="d-flex mb-3" style="max-width: 300px;">
+  <select name="usuario_id" class="form-select me-2" onchange="this.form.submit()">
+    <option value="">-- Todos --</option>
+    {% for usuario in usuarios %}
+    <option value="{{ usuario.id }}" {% if filtro_usuario_id and usuario.id==filtro_usuario_id|int %}selected{% endif
+      %}>{{ usuario.nombre }}</option>
+    {% endfor %}
+  </select>
+</form>
 
-            {% if filtro_usuario_id %}
-            <p>Mostrando tareas filtradas — <a href="{{ url_for('home') }}">ver todas</a></p>
-            {% endif %}
+{% if filtro_usuario_id %}
+<p>Mostrando tareas filtradas — <a href="{{ url_for('home') }}">ver todas</a></p>
+{% endif %}
 
-            <ul class="list-group">
-              {% for tarea in tareas %}
-              <li class="list-group-item d-flex justify-content-between align-items-center">
-                <span>{{ tarea.titulo }} - {{ tarea.usuario.nombre }} - {{ tarea.dias_transcurridos }} días</span>
+<ul class="list-group">
+  {% for tarea in tareas %}
+  <li class="list-group-item d-flex justify-content-between align-items-center">
+    <span>{{ tarea.titulo }} - {{ tarea.usuario.nombre }} - {{ tarea.dias_transcurridos }} días</span>
 
-                <a href="{{ url_for('editar_tarea', tarea_id=tarea.id) }}"
-                  class="btn btn-sm btn-outline-secondary">Editar</a>
+    <a href="{{ url_for('editar_tarea', tarea_id=tarea.id) }}" class="btn btn-sm btn-outline-secondary">Editar</a>
 
-                <form method="POST" action="{{ url_for('eliminar_tarea', tarea_id=tarea.id) }}"
-                  onsubmit="return confirm('¿Eliminar esta tarea?')">
-                  <button type="submit" class="btn btn-sm btn-outline-danger">Eliminar</button>
+    <form method="POST" action="{{ url_for('eliminar_tarea', tarea_id=tarea.id) }}"
+      onsubmit="return confirm('¿Eliminar esta tarea?')">
+      <button type="submit" class="btn btn-sm btn-outline-danger">Eliminar</button>
 
-                </form>
+    </form>
 
-                <form method="POST" action="{{ url_for('actualizar_estatus', tarea_id=tarea.id) }}">
-                  <select name="estatus" class="form-select form-select-sm" onchange="this.form.submit()">
-                    <option value="Pendiente" {% if tarea.estatus=="Pendiente" %}selected{% endif %}>Pendiente</option>
-                    <option value="En proceso" {% if tarea.estatus=="En proceso" %}selected{% endif %}>En proceso
-                    </option>
-                    <option value="Completado" {% if tarea.estatus=="Completado" %}selected{% endif %}>Completado
-                    </option>
-                  </select>
-                </form>
-              </li>
-              {% endfor %}
-            </ul>
-            {% endblock %}
+    <form method="POST" action="{{ url_for('actualizar_estatus', tarea_id=tarea.id) }}">
+      <select name="estatus" class="form-select form-select-sm" onchange="this.form.submit()">
+        <option value="Pendiente" {% if tarea.estatus=="Pendiente" %}selected{% endif %}>Pendiente</option>
+        <option value="En proceso" {% if tarea.estatus=="En proceso" %}selected{% endif %}>En proceso
+        </option>
+        <option value="Completado" {% if tarea.estatus=="Completado" %}selected{% endif %}>Completado
+        </option>
+      </select>
+    </form>
+  </li>
+  {% endfor %}
+</ul>
+{% endblock %}
