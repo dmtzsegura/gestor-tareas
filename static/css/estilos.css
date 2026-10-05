@@ -1,0 +1,23 @@
+:root {
+  --azul-marino: #0F1F4B;
+  --azul: #2563EB;
+  --fondo: #F5F7FB;
+  --ambar: #D97706;
+  --ambar-claro: #FFFBEB;
+  --morado: #7C3AED;
+  --morado-claro: #F5F3FF;
+  --verde: #16A34A;
+  --verde-claro: #F0FDF4;
+}
+
+body {
+  background-color: var(--fondo);
+}
+
+.sidebar {
+  background-color: var(--azul-marino);
+}
+
+.sidebar .nav-link {
+  color: white;
+}

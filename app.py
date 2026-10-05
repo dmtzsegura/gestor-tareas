@@ -43,8 +43,13 @@ def home():
 
     for tarea in tareas:
         tarea.dias_transcurridos = (date.today() - tarea.fecha_asignacion).days
+        
+    total = len(tareas)
+    pendientes = len([t for t in tareas if t.estatus == "Pendiente"])
+    en_proceso = len([t for t in tareas if t.estatus == "En proceso"])
+    completadas = len([t for t in tareas if t.estatus == "Completado"])
 
-    return render_template("index.html", tareas=tareas, filtro_usuario_id=filtro_usuario_id, usuarios=Usuario.query.all())
+    return render_template("index.html", tareas=tareas, filtro_usuario_id=filtro_usuario_id, usuarios=Usuario.query.all(), total=total, pendientes=pendientes, en_proceso=en_proceso, completadas=completadas)
 
 
 @app.route("/login", methods=["GET", "POST"])
