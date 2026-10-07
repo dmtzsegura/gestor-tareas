@@ -51,3 +51,9 @@ body {
 .sidebar .nav-link {
   color: white;
 }
+
+.enlace-activo {
+  background-color: var(--azul);
+  color: white;
+  border-radius: 8px;
+}

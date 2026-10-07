@@ -34,6 +34,9 @@ class Usuario(db.Model):
 
 @app.route("/")
 def home():
+    if "usuario" not in session:
+        return redirect(url_for("login"))
+    
     filtro_usuario_id = request.args.get("usuario_id")
 
     if filtro_usuario_id:
@@ -158,6 +161,11 @@ def eliminar_tarea(tarea_id):
         flash("Sólo quién asignó la tarea tiene permiso para eliminarla")
 
     return redirect(url_for("home"))
+
+@app.route("/logout")
+def logout():
+    session.pop("usuario", None)
+    return redirect(url_for("login"))
 
 if __name__ == "__main__":
     app.run(debug=True)

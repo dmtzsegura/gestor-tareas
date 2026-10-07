@@ -67,29 +67,47 @@
 </div>
 
 <ul class="list-group">
+  <li class="list-group-item">
+    <div class="row small text-dark fw-bold">
+      <div class="col-3">Tarea</div>
+      <div class="col-2">Asignado a</div>
+      <div class="col-2">Estatus</div>
+      <div class="col-2">Fecha de asignación</div>
+      <div class="col-1">Días transcurridos</div>
+      <div class="col-2">Acciones</div>
+    </div>
+  </li>
   {% for tarea in tareas %}
-  <li class="list-group-item d-flex justify-content-between align-items-center">
-    <span>{{ tarea.titulo }} - {{ tarea.usuario.nombre }} - {{ tarea.dias_transcurridos }} días</span>
+  <li class="list-group-item">
+    <div class="row align-items-center">
 
-    <a href="{{ url_for('editar_tarea', tarea_id=tarea.id) }}" class="btn btn-sm btn-outline-secondary">Editar</a>
+      <div class="col-3">{{ tarea.titulo }}</div>
+      <div class="col-2">{{ tarea.usuario.nombre }}</div>
+      <div class="col-2">
+        <form method="POST" action="{{ url_for('actualizar_estatus', tarea_id=tarea.id) }}">
+          <select name="estatus"
+            class="form-select form-select-sm text-dark {% if tarea.estatus == 'Pendiente' %}tarjeta-pendiente{% elif tarea.estatus == 'En proceso' %}tarjeta-proceso{% elif tarea.estatus == 'Completado' %}tarjeta-completada{% endif %}"
+            onchange="this.form.submit()">
+            <option value="Pendiente" {% if tarea.estatus=="Pendiente" %}selected{% endif %}>Pendiente</option>
+            <option value="En proceso" {% if tarea.estatus=="En proceso" %}selected{% endif %}>En proceso</option>
+            <option value="Completado" {% if tarea.estatus=="Completado" %}selected{% endif %}>Completado</option>
+          </select>
+        </form>
+      </div>
 
-    <form method="POST" action="{{ url_for('eliminar_tarea', tarea_id=tarea.id) }}"
-      onsubmit="return confirm('¿Eliminar esta tarea?')">
-      <button type="submit" class="btn btn-sm btn-outline-danger">Eliminar</button>
+      <div class="col-2">{{ tarea.fecha_asignacion.strftime('%d/%m/%Y') }}</div>
+      <div class="col-1">{{ tarea.dias_transcurridos }}</div>
 
-    </form>
+      {#
+      <a href="{{ url_for('editar_tarea', tarea_id=tarea.id) }}" class="btn btn-sm btn-outline-secondary">Editar</a>
 
-    <form method="POST" action="{{ url_for('actualizar_estatus', tarea_id=tarea.id) }}">
-      <select name="estatus"
-        class="form-select form-select-sm text-dark {% if tarea.estatus == 'Pendiente' %}tarjeta-pendiente{% elif tarea.estatus == 'En proceso' %}tarjeta-proceso{% elif tarea.estatus == 'Completado' %}tarjeta-completada{% endif %}"
-        onchange="this.form.submit()">
-        <option value="Pendiente" {% if tarea.estatus=="Pendiente" %}selected{% endif %}>Pendiente</option>
-        <option value="En proceso" {% if tarea.estatus=="En proceso" %}selected{% endif %}>En proceso
-        </option>
-        <option value="Completado" {% if tarea.estatus=="Completado" %}selected{% endif %}>Completado
-        </option>
-      </select>
-    </form>
+      <form method="POST" action="{{ url_for('eliminar_tarea', tarea_id=tarea.id) }}"
+        onsubmit="return confirm('¿Eliminar esta tarea?')">
+        <button type="submit" class="btn btn-sm btn-outline-danger">Eliminar</button>
+      </form>
+      #}
+
+    </div>
   </li>
   {% endfor %}
 </ul>
