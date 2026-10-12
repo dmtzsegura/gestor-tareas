@@ -54,6 +54,22 @@ def home():
 
     return render_template("index.html", tareas=tareas, filtro_usuario_id=filtro_usuario_id, usuarios=Usuario.query.all(), total=total, pendientes=pendientes, en_proceso=en_proceso, completadas=completadas)
 
+@app.route("/registro", methods=["GET", "POST"])
+def registro():
+    if request.method == "POST":
+        nombre = request.form["nombre"]
+        password = request.form["password"]
+        nombre_normalizado = quitar_acentos(nombre).lower()
+        
+        for u in Usuario.query.all():
+            if quitar_acentos(u.nombre).lower() == nombre_normalizado:
+                return render_template("registro.html", error="El nombre de usuario ya existe")
+        
+        nuevo_usuario = Usuario(nombre=nombre, password=password)
+        db.session.add(nuevo_usuario)
+        db.session.commit()
+        return redirect(url_for("login"))
+    return render_template("registro.html")    
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
