@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash
+from werkzeug.security import generate_password_hash, check_password_hash
 from flask_sqlalchemy import SQLAlchemy
 from datetime import date
 
@@ -65,7 +66,7 @@ def registro():
             if quitar_acentos(u.nombre).lower() == nombre_normalizado:
                 return render_template("registro.html", error="El nombre de usuario ya existe")
         
-        nuevo_usuario = Usuario(nombre=nombre, password=password)
+        nuevo_usuario = Usuario(nombre=nombre, password=generate_password_hash(password))
         db.session.add(nuevo_usuario)
         db.session.commit()
         return redirect(url_for("login"))
@@ -79,7 +80,7 @@ def login():
         nombre_normalizado = quitar_acentos(nombre).lower()
         usuario = None
         for u in Usuario.query.all():
-            if quitar_acentos(u.nombre).lower() == nombre_normalizado and u.password == password:
+            if quitar_acentos(u.nombre).lower() == nombre_normalizado and check_password_hash(u.password, password):
                 usuario = u
                 break
         
